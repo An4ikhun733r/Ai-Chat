@@ -1,4 +1,11 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { checkAuthStatus, loginUser } from "../helpers/api-communicator";
 
 type User = {
   name: string;
@@ -16,37 +23,43 @@ type UserAuth = {
 const AuthContext = createContext<UserAuth | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    useEffect(()=>{
-        //fetch if cookies valid, then skip login
-    }, [])
-
-    async function login(email: string, password: string) {
-        
+  useEffect(() => {
+    async function checkStatus() {
+      const data = await checkAuthStatus();
+      if (data) {
+        setUser({ email: data.email, name: data.name });
+        setIsLoggedIn(true);
+      }
     }
+    checkStatus();
+  }, []);
 
-    async function signup(name: string, email: string, password: string) {
-        
+  async function login(email: string, password: string) {
+    const data = await loginUser(email, password);
+    if (data) {
+      setUser({ email: data.email, name: data.name });
+      setIsLoggedIn(true);
     }
+  }
 
-    async function logout() {
-        
-    }
+  async function signup(name: string, email: string, password: string) {}
 
-    const value = {
-        user,
-        isLoggedIn,
-        login,
-        logout,
-        signup,
-    }
+  async function logout() {}
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  const value = {
+    user,
+    isLoggedIn,
+    login,
+    logout,
+    signup,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth(){
-    return useContext(AuthContext);
-} 
+export function useAuth() {
+  return useContext(AuthContext);
+}

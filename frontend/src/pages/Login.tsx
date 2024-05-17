@@ -1,7 +1,27 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import CustomizedInput from "../components/shared/CustomizedInput";
+import { CiLogin } from "react-icons/ci";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 function Login() {
+  const auth = useAuth();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    try {
+      toast.loading("Signing In", { id: "login" });
+      await auth?.login(email, password);
+      toast.success("Signed In Successfully", { id: "login" });
+    } catch (error) {
+      console.log(error);
+      toast.error("Signing Is Failed", { id: "login" });
+    }
+  }
+
   return (
     <div>
       <Box width={"100%"} height={"100%"} display={"flex"} flex={1}>
@@ -22,6 +42,7 @@ function Login() {
           mt={16}
         >
           <form
+            onSubmit={handleSubmit}
             style={{
               margin: "auto",
               padding: "30px",
@@ -46,7 +67,29 @@ function Login() {
                 Login
               </Typography>
               <CustomizedInput type="email" name="email" label="Email" />
-              <CustomizedInput type="password" name="password" label="Password"/>
+              <CustomizedInput
+                type="password"
+                name="password"
+                label="Password"
+              />
+              <Button
+                type="submit"
+                sx={{
+                  px: 2,
+                  py: 1,
+                  mt: 2,
+                  width: "400px",
+                  borderRadius: 2,
+                  bgcolor: "#00fffc",
+                  ":hover": {
+                    bgcolor: "white",
+                    color: "black",
+                  },
+                }}
+                endIcon={<CiLogin />}
+              >
+                Login
+              </Button>
             </Box>
           </form>
         </Box>

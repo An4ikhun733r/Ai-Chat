@@ -36,7 +36,7 @@ function Chat() {
         })
         .catch((err) => {
           console.log(err);
-          toast.error("Loading Failed", { id: "loadchats" });
+          toast.error("Loading Failed.", { id: "loadchats" });
         });
     }
   });

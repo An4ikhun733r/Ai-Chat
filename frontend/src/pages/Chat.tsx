@@ -3,15 +3,21 @@ import { useAuth } from "../context/AuthContext";
 import { red } from "@mui/material/colors";
 import ChatItem from "../components/chat/ChatItem";
 import { IoMdSend } from "react-icons/io";
-import { useLayoutEffect, useRef, useState } from "react";
-import { getUserChats, sendChatRequest } from "../helpers/api-communicator";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  deleteUserChats,
+  getUserChats,
+  sendChatRequest,
+} from "../helpers/api-communicator";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 type Message = {
   role: "user" | "assistant";
   content: string;
 };
 
 function Chat() {
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const auth = useAuth();
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -24,6 +30,18 @@ function Chat() {
     setChatMessages((prev) => [...prev, newMessage]);
     const chatData = await sendChatRequest(content);
     setChatMessages([...chatData.chats]);
+  };
+
+  const handleDeleteChats = async () => {
+    try {
+      toast.loading("Deleting Chats", { id: "deletechats" });
+      await deleteUserChats();
+      setChatMessages([]);
+      toast.success("Deleted Chats Successfully", { id: "deletechats" });
+    } catch (error) {
+      console.log(error);
+      toast.error("Deleting Chats Failed", { id: "deletechats" });
+    }
   };
 
   useLayoutEffect(() => {
@@ -39,7 +57,13 @@ function Chat() {
           toast.error("Loading Failed.", { id: "loadchats" });
         });
     }
-  });
+  }, [auth]);
+
+  useEffect(() => {
+    if (!auth?.user) {
+      return navigate("/login");
+    }
+  }, [auth]);
 
   return (
     <Box
@@ -90,6 +114,7 @@ function Chat() {
             Education, etc. But avoid sharing personal information!
           </Typography>
           <Button
+            onClick={handleDeleteChats}
             sx={{
               width: "200px",
               my: "auto",
@@ -143,14 +168,12 @@ function Chat() {
           }}
         >
           {chatMessages.map((chat, index) => (
-            //@ts-expect-error wrong role
             <ChatItem content={chat.content} role={chat.role} key={index} />
           ))}
         </Box>
         <div
           style={{
             width: "100%",
-            padding: "20px",
             borderRadius: 8,
             backgroundColor: "rgb(17,27,39)",
             display: "flex",
@@ -164,7 +187,7 @@ function Chat() {
             style={{
               width: "100%",
               backgroundColor: "transparent",
-              padding: "10px",
+              padding: "30px",
               border: "none",
               outline: "none",
               color: "white",
@@ -173,7 +196,7 @@ function Chat() {
           />
           <IconButton
             onClick={handleSubmit}
-            sx={{ ml: "auto", color: "white" }}
+            sx={{ ml: "auto", color: "white", mx: 1 }}
           >
             <IoMdSend />
           </IconButton>

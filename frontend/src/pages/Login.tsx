@@ -3,10 +3,12 @@ import CustomizedInput from "../components/shared/CustomizedInput";
 import { CiLogin } from "react-icons/ci";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const auth = useAuth();
-
+  const navigate = useNavigate();
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -21,6 +23,12 @@ function Login() {
       toast.error("Signing Is Failed", { id: "login" });
     }
   }
+
+  useEffect(() => { 
+    if (auth?.user) {
+      return navigate("/chat");
+    }
+  }, [auth]);
 
   return (
     <div>
